@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Basic RuuviTAG Data</title>
     <style>
+
+nav {
+        background-color: #333;
+        padding: 10px;
+    }
+    .nav-bar {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+    }
+    .nav-bar li {
+        margin: 0 15px;
+    }
+    .nav-bar a {
+        text-decoration: none;
+        color: white;
+        font-size: 1em;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+    .nav-bar a:hover {
+        background-color: #575757;
+    }
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -53,6 +79,13 @@
 </head>
 <body>
     <div class="container">
+        <nav>
+            <ul class="nav-bar">
+                <li><a href="/">Home</a></li>
+                <li><a href="/basic">Basic View</a></li>
+                <li><a href="/data" target="_blank">JSON Data</a></li>
+            </ul>
+        </nav>
         <h1>Basic Sensor Data</h1>
         <div id="data-container">
             <div id="temperature" class="data-item">Temperature: -- °C</div>
