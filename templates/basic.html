@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic RuuviTAG Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f7fa;
+        }
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 0.5em;
+        }
+        .data-item, .threshold-item {
+            font-size: 1.2em;
+            color: #555;
+            margin: 0.5em 0;
+        }
+        .threshold-item input {
+            width: 60px;
+            font-size: 1em;
+            padding: 0.2em;
+            text-align: center;
+        }
+        #error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .alert {
+            color: #d9534f;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Basic Sensor Data</h1>
+        <div id="data-container">
+            <div id="temperature" class="data-item">Temperature: -- °C</div>
+            <div id="humidity" class="data-item">Humidity: -- %</div>
+            <div id="pressure" class="data-item">Pressure: -- hPa</div>
+            <p id="error-message" hidden>No data available</p>
+            <p id="alert-message" class="alert" hidden></p>
+
+            <!-- Threshold input fields -->
+            <h2>Set Alert Thresholds</h2>
+            <div class="threshold-item">Temperature Threshold: 
+                <input id="temp-threshold" type="number" value="25"> °C
+            </div>
+            <div class="threshold-item">Humidity Threshold: 
+                <input id="hum-threshold" type="number" value="50"> %
+            </div>
+            <div class="threshold-item">Pressure Threshold: 
+                <input id="pres-threshold" type="number" value="1020"> hPa
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial threshold values
+        const thresholds = {
+            temperature: 25,  // Default temperature threshold in °C
+            humidity: 50,     // Default humidity threshold in %
+            pressure: 1020    // Default pressure threshold in hPa
+        };
+
+        // Update thresholds based on user input
+        function updateThresholds() {
+            thresholds.temperature = parseFloat(document.getElementById('temp-threshold').value);
+            thresholds.humidity = parseFloat(document.getElementById('hum-threshold').value);
+            thresholds.pressure = parseFloat(document.getElementById('pres-threshold').value);
+        }
+
+        // Add event listeners to input fields to update thresholds on change
+        document.getElementById('temp-threshold').addEventListener('change', updateThresholds);
+        document.getElementById('hum-threshold').addEventListener('change', updateThresholds);
+        document.getElementById('pres-threshold').addEventListener('change', updateThresholds);
+
+        // Function to check thresholds and display alert messages
+        function checkAlerts(sensorData) {
+            const alerts = [];
+
+            if (sensorData.temperature > thresholds.temperature) {
+                alerts.push("High temperature");
+            }
+            if (sensorData.humidity > thresholds.humidity) {
+                alerts.push("High humidity");
+            }
+            if (sensorData.pressure > thresholds.pressure) {
+                alerts.push("High pressure");
+            }
+
+            const alertMessage = document.getElementById('alert-message');
+            if (alerts.length > 0) {
+                alertMessage.innerText = alerts.join(", ");
+                alertMessage.hidden = false;
+            } else {
+                alertMessage.hidden = true;
+            }
+        }
+
+        async function fetchBasicData() {
+            try {
+                const response = await fetch('/data');
+                if (!response.ok) throw new Error("No data available");
+                const data = await response.json();
+
+                // Extract only temperature, humidity, and pressure
+                const sensorData = data[1];
+                document.getElementById('temperature').innerText = `Temperature: ${sensorData.temperature} °C`;
+                document.getElementById('humidity').innerText = `Humidity: ${sensorData.humidity} %`;
+                document.getElementById('pressure').innerText = `Pressure: ${sensorData.pressure} hPa`;
+
+                // Hide error message if data is available
+                document.getElementById('error-message').hidden = true;
+
+                // Check for alerts based on sensor data
+                checkAlerts(sensorData);
+            } catch (error) {
+                // Show error message if data is unavailable
+                document.getElementById('error-message').hidden = false;
+                document.getElementById('temperature').innerText = "Temperature: -- °C";
+                document.getElementById('humidity').innerText = "Humidity: -- %";
+                document.getElementById('pressure').innerText = "Pressure: -- hPa";
+                
+                // Hide alert if there's an error
+                document.getElementById('alert-message').hidden = true;
+            }
+        }
+
+        // Fetch data initially and every second
+        fetchBasicData();
+        setInterval(fetchBasicData, 1000);
+    </script>
+</body>
+</html>
