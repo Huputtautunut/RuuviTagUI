@@ -97,12 +97,18 @@ nav {
             <!-- Threshold input fields -->
             <h2>Set Alert Thresholds</h2>
             <div class="threshold-item">Temperature Threshold: 
+                <div></div>
+                <input id="temp-lower-threshold" type="number" value="15"> °C -
                 <input id="temp-threshold" type="number" value="25"> °C
             </div>
             <div class="threshold-item">Humidity Threshold: 
+                <div></div>
+                <input id="hum-lower-threshold" type="number" value="30"> % -
                 <input id="hum-threshold" type="number" value="50"> %
             </div>
             <div class="threshold-item">Pressure Threshold: 
+                <div></div>
+                <input id="pres-lower-threshold" type="number" value="1000"> hPa -
                 <input id="pres-threshold" type="number" value="1020"> hPa
             </div>
         </div>
@@ -111,45 +117,69 @@ nav {
     <script>
         // Initial threshold values
         const thresholds = {
-            temperature: 25,  // Default temperature threshold in °C
-            humidity: 50,     // Default humidity threshold in %
-            pressure: 1020    // Default pressure threshold in hPa
-        };
+    temperature: { upper: 25, lower: 15 },  // °C
+    humidity: { upper: 50, lower: 30 },    // %
+    pressure: { upper: 1020, lower: 1000 } // hPa
+};
 
-        // Update thresholds based on user input
-        function updateThresholds() {
-            thresholds.temperature = parseFloat(document.getElementById('temp-threshold').value);
-            thresholds.humidity = parseFloat(document.getElementById('hum-threshold').value);
-            thresholds.pressure = parseFloat(document.getElementById('pres-threshold').value);
-        }
+// Update thresholds based on user input
+function updateThresholds() {
+    thresholds.temperature.upper = parseFloat(document.getElementById('temp-threshold').value);
+    thresholds.temperature.lower = parseFloat(document.getElementById('temp-lower-threshold').value);
 
-        // Add event listeners to input fields to update thresholds on change
-        document.getElementById('temp-threshold').addEventListener('change', updateThresholds);
-        document.getElementById('hum-threshold').addEventListener('change', updateThresholds);
-        document.getElementById('pres-threshold').addEventListener('change', updateThresholds);
+    thresholds.humidity.upper = parseFloat(document.getElementById('hum-threshold').value);
+    thresholds.humidity.lower = parseFloat(document.getElementById('hum-lower-threshold').value);
 
+    thresholds.pressure.upper = parseFloat(document.getElementById('pres-threshold').value);
+    thresholds.pressure.lower = parseFloat(document.getElementById('pres-lower-threshold').value);
+}
+
+// Add event listeners to input fields to update thresholds on change
+document.getElementById('temp-threshold').addEventListener('change', updateThresholds);
+document.getElementById('temp-lower-threshold').addEventListener('change', updateThresholds);
+
+document.getElementById('hum-threshold').addEventListener('change', updateThresholds);
+document.getElementById('hum-lower-threshold').addEventListener('change', updateThresholds);
+
+document.getElementById('pres-threshold').addEventListener('change', updateThresholds);
+document.getElementById('pres-lower-threshold').addEventListener('change', updateThresholds);
         // Function to check thresholds and display alert messages
         function checkAlerts(sensorData) {
-            const alerts = [];
+    const alerts = [];
 
-            if (sensorData.temperature > thresholds.temperature) {
-                alerts.push("High temperature");
-            }
-            if (sensorData.humidity > thresholds.humidity) {
-                alerts.push("High humidity");
-            }
-            if (sensorData.pressure > thresholds.pressure) {
-                alerts.push("High pressure");
-            }
+    // Temperature alerts
+    if (sensorData.temperature > thresholds.temperature.upper) {
+        alerts.push("High temperature");
+    }
+    if (sensorData.temperature < thresholds.temperature.lower) {
+        alerts.push("Low temperature");
+    }
 
-            const alertMessage = document.getElementById('alert-message');
-            if (alerts.length > 0) {
-                alertMessage.innerText = alerts.join(", ");
-                alertMessage.hidden = false;
-            } else {
-                alertMessage.hidden = true;
-            }
-        }
+    // Humidity alerts
+    if (sensorData.humidity > thresholds.humidity.upper) {
+        alerts.push("High humidity");
+    }
+    if (sensorData.humidity < thresholds.humidity.lower) {
+        alerts.push("Low humidity");
+    }
+
+    // Pressure alerts
+    if (sensorData.pressure > thresholds.pressure.upper) {
+        alerts.push("High pressure");
+    }
+    if (sensorData.pressure < thresholds.pressure.lower) {
+        alerts.push("Low pressure");
+    }
+
+    // Display alerts
+    const alertMessage = document.getElementById('alert-message');
+    if (alerts.length > 0) {
+        alertMessage.innerText = alerts.join(", ");
+        alertMessage.hidden = false;
+    } else {
+        alertMessage.hidden = true;
+    }
+}
 
         async function fetchBasicData() {
             try {
